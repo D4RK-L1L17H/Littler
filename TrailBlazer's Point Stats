@@ -1,0 +1,93 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+int main() {
+
+    cout << "=======================================================" << endl;
+    cout << "\tWELCOME TO THE TRAIL BLAZER'S STATS!" << endl;
+    cout << "=======================================================" << endl;
+    cout << "\nEnter the amount of points the BLAZER'S scored per game:\n" << endl;
+
+    int game = 0;
+    int total = 0;
+    int minimum = 0;
+    int maximum = 0;
+    string points;
+    bool firstNum = true;
+
+    while (true) {
+        cout << "Points for game " << (game + 1) << " (or 'done'): ";
+        cin >> points;
+
+        if (points == "done" || points == "DONE" || points == "Done") {
+            if (game == 0) {
+                cout << "\nYou didn't enter any points! Try again.\n" << endl;
+            }
+            else {
+                break;
+            }
+        }
+        bool valid = true;
+        int startIndex = 0;
+
+        if (points[0] == '-') {
+            startIndex = 1;
+            if (points.length() == 1) valid = false;
+        }
+
+        for (int i = startIndex; i < points.length(); i++) {
+            if (points[i] < '0' || points[i] > '9') {
+                valid = false;
+                break;
+            }
+        }
+
+        if (valid) {
+            int number = stoi(points);
+
+            game++;
+            total += number;
+
+            if (firstNum) {
+                minimum = number;
+                maximum = number;
+                firstNum = false;
+            }
+            else {
+                if (number < minimum) minimum = number;
+                if (number > maximum) maximum = number;
+            }
+
+            cout << "   Added " << number << " to your list!" << endl;
+        }
+        else {
+            cout << "   Oops! That's not a valid number. Try again." << endl;
+        }
+    }
+
+    double average = static_cast<double>(total) / game;
+    int range = maximum - minimum;
+
+    cout << "\n=======================================================" << endl;
+    cout << "\t\tHERE ARE THE STATS!" << endl;
+    cout << "=======================================================" << endl;
+
+    cout << fixed << setprecision(2);
+
+    cout << "\nCount:\t\t" << game << " numbers" << endl;
+    cout << "Sum:\t\t" << total << " points in all games played" << endl;
+    cout << "Average:\t" << average << " points per game" << endl;
+    cout << "Minimum:\t" << minimum << " points scored in a game" << endl;
+    cout << "Maximum:\t" << maximum << " points scored in a game" << endl;
+    cout << "Range:\t\t" << range << " points between best and worst game" << endl;
+
+    cout << "\n-------------------------------------------------------" << endl;
+    
+    cout << "\n=======================================================" << endl;
+    cout << "    Thanks for keeping up with the TRAIL BLAZER'S!" << endl;
+    cout << "=======================================================" << endl;
+
+    return 0;
+}
