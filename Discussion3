@@ -1,0 +1,41 @@
+#include <iostream>
+using namespace std;
+
+// Reads integers into the array
+void readArray(int arr[], int count) {
+    for (int i = 0; i < count; i++) {
+        cin >> arr[i];
+    }
+}
+
+// Returns true if arr is sorted ascending from start to end (inclusive)
+bool isSorted(int arr[], int start, int end) {
+    for (int i = start; i < end; i++) {
+        if (arr[i] > arr[i + 1]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    int arr[20];
+    int count, start, end;
+
+    cout << "Number of integers: ";
+    cin >> count;
+
+    cout << "Enter the values: ";
+    readArray(arr, count);
+
+    cout << "Enter start and end index: ";
+    cin >> start >> end;
+
+    if (isSorted(arr, start, end)) {
+        cout << "yes" << endl;
+    } else {
+        cout << "no" << endl;
+    }
+
+    return 0;
+}
