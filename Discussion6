@@ -1,0 +1,66 @@
+#include <iostream>
+#include <cstring>
+#include <fstream>
+using namespace std;
+
+struct AudiS5 {
+    char color[30];
+    char transmission[20];
+    int year;
+    int mileage;
+    int horsepower;
+};
+
+void getCarInfo(AudiS5 &car) {
+    cout << "Enter color: ";
+    cin.getline(car.color, 30);
+
+    cout << "Enter transmission (Manual/Automatic): ";
+    cin.getline(car.transmission, 20);
+    while (strcmp(car.transmission, "Manual")    != 0 &&
+           strcmp(car.transmission, "Automatic") != 0) {
+        cout << "Invalid! Enter Manual or Automatic: ";
+        cin.getline(car.transmission, 20);
+    }
+
+    cout << "Enter year: ";
+    cin >> car.year;
+    while (car.year < 2007 || car.year > 2026) {
+        cout << "Invalid! Audi S5 years range from 2007 to 2026: ";
+        cin >> car.year;
+    }
+
+    cout << "Enter mileage: ";
+    cin >> car.mileage;
+    while (car.mileage < 0) {
+        cout << "Invalid! Mileage cannot be negative: ";
+        cin >> car.mileage;
+    }
+
+    cout << "Enter horsepower: ";
+    cin >> car.horsepower;
+    while (car.horsepower < 354 || car.horsepower > 500) {
+        cout << "Invalid! Audi S5 horsepower ranges from 354 to 500: ";
+        cin >> car.horsepower;
+    }
+}
+
+void printCarInfo(const AudiS5 &car) {
+    cout << "\n===== Audi S5 Info =====" << endl;
+    cout << "Color:        " << car.color        << endl;
+    cout << "Transmission: " << car.transmission << endl;
+    cout << "Year:         " << car.year         << endl;
+    cout << "Mileage:      " << car.mileage      << " miles" << endl;
+    cout << "Horsepower:   " << car.horsepower   << " hp"    << endl;
+}
+
+int main() {
+    AudiS5 myS5;
+
+    cout << "=== Audi S5 Tracker ===" << endl;
+
+    getCarInfo(myS5);
+    printCarInfo(myS5);
+
+    return 0;
+}
