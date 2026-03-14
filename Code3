@@ -1,0 +1,180 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+using namespace std;
+
+struct Pixel {
+    int red;
+    int green;
+    int blue;
+};
+
+struct Image {
+    Pixel** pixels;
+    int width;
+    int height;
+};
+
+void allocateImage(Image& img) {
+    img.pixels = new Pixel * [img.height];
+    for (int i = 0; i < img.height; i++) {
+        img.pixels[i] = new Pixel[img.width];
+    }
+}
+
+void freeImage(Image& img) {
+    for (int i = 0; i < img.height; i++) {
+        delete[] img.pixels[i];
+    }
+    delete[] img.pixels;
+    img.pixels = nullptr;
+}
+
+bool readImage(const char filename[], Image& img) {
+    ifstream inFile(filename);
+    if (!inFile) {
+        cout << "Error: could not open " << filename << endl;
+        return false;
+    }
+    char format[3];
+    inFile >> format;
+    if (strcmp(format, "P3") != 0) {
+        cout << "Error: not a P3 file." << endl;
+        return false;
+    }
+    int maxVal;
+    inFile >> img.width >> img.height >> maxVal;
+    allocateImage(img);
+    for (int r = 0; r < img.height; r++) {
+        for (int c = 0; c < img.width; c++) {
+            inFile >> img.pixels[r][c].red
+                >> img.pixels[r][c].green
+                >> img.pixels[r][c].blue;
+        }
+    }
+    inFile.close();
+    return true;
+}
+
+void writeImage(const char filename[], const Image& img) {
+    ofstream outFile(filename);
+    outFile << "P3" << endl;
+    outFile << img.width << " " << img.height << endl;
+    outFile << "255" << endl;
+    for (int r = 0; r < img.height; r++) {
+        for (int c = 0; c < img.width; c++) {
+            outFile << img.pixels[r][c].red << " "
+                << img.pixels[r][c].green << " "
+                << img.pixels[r][c].blue;
+            if (c < img.width - 1) outFile << "   ";
+        }
+        outFile << endl;
+    }
+    outFile.close();
+    cout << "Output written to " << filename << endl;
+}
+
+void flipHorizontal(Image& img) {
+    for (int r = 0; r < img.height; r++) {
+        int left = 0;
+        int right = img.width - 1;
+        while (left < right) {
+            Pixel temp = img.pixels[r][left];
+            img.pixels[r][left] = img.pixels[r][right];
+            img.pixels[r][right] = temp;
+            left++;
+            right--;
+        }
+    }
+}
+
+void convertToGrayscale(Image& img) {
+    for (int r = 0; r < img.height; r++) {
+        for (int c = 0; c < img.width; c++) {
+            int gray = (int)(0.299 * img.pixels[r][c].red
+                + 0.587 * img.pixels[r][c].green
+                + 0.114 * img.pixels[r][c].blue);
+            img.pixels[r][c].red = gray;
+            img.pixels[r][c].green = gray;
+            img.pixels[r][c].blue = gray;
+        }
+    }
+}
+
+void brighten(Image& img, int amount) {
+    for (int r = 0; r < img.height; r++) {
+        for (int c = 0; c < img.width; c++) {
+            img.pixels[r][c].red = min(255, img.pixels[r][c].red + amount);
+            img.pixels[r][c].green = min(255, img.pixels[r][c].green + amount);
+            img.pixels[r][c].blue = min(255, img.pixels[r][c].blue + amount);
+        }
+    }
+}
+
+void printMenu() {
+    cout << "\n===== Image Transformer =====" << endl;
+    cout << "1. Flip Horizontally" << endl;
+    cout << "2. Convert to Grayscale" << endl;
+    cout << "3. Brighten" << endl;
+    cout << "0. Save and Quit" << endl;
+    cout << "Enter choice: ";
+}
+
+int main() {
+    Image img;
+    img.pixels = nullptr;
+
+    char inputFile[50];
+    char outputFile[50];
+
+    cout << "Enter input filename (e.g. input.ppm): ";
+    cin >> inputFile;
+
+    if (!readImage(inputFile, img)) {
+        return 1;
+    }
+    cout << "Image loaded: " << img.width << "x" << img.height << endl;
+
+    cout << "Enter output filename (e.g. output.ppm): ";
+    cin >> outputFile;
+
+    int choice;
+    do {
+        printMenu();
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid input!" << endl;
+            continue;
+        }
+        switch (choice) {
+        case 1:
+            flipHorizontal(img);
+            cout << "Flipped horizontally." << endl;
+            break;
+        case 2:
+            convertToGrayscale(img);
+            cout << "Converted to grayscale." << endl;
+            break;
+        case 3:
+            int amount;
+            cout << "Enter brightness amount (1-255): ";
+            cin >> amount;
+            while (amount < 1 || amount > 255) {
+                cout << "Invalid! Enter value between 1 and 255: ";
+                cin >> amount;
+            }
+            brighten(img, amount);
+            cout << "Brightened by " << amount << "." << endl;
+            break;
+        case 0:
+            writeImage(outputFile, img);
+            break;
+        default:
+            cout << "Invalid choice!" << endl;
+        }
+    } while (choice != 0);
+
+    freeImage(img);
+    return 0;
+}
