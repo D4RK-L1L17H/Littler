@@ -1,0 +1,91 @@
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+using namespace std;
+
+
+void openFile(ifstream& inFile, ofstream& outFile) {
+    inFile.open("stem.txt");
+    if (!inFile) {
+        cout << "Error: could not open stem.txt" << endl;
+        exit(1);
+    }
+    outFile.open("stemout.txt");
+    if (!outFile) {
+        cout << "Error: could not open stemout.txt" << endl;
+        exit(1);
+    }
+}
+
+void ratioCalc(ifstream& inFile, ofstream& outFile) {
+    char major[50];
+    int men, women;
+    char comma;
+
+    outFile << fixed << setprecision(2);
+    outFile << left << setw(30) << "Major"
+        << right << setw(12) << "% Men"
+        << setw(12) << "% Women" << endl;
+    outFile << "------------------------------------------------------" << endl;
+
+    while (inFile.getline(major, 50, ',')) {
+        inFile >> men >> comma >> women;
+        inFile.ignore();
+
+        double total = men + women;
+        double pctMen = (men / total) * 100.0;
+        double pctWomen = (women / total) * 100.0;
+
+        outFile << left << setw(30) << major
+            << right << setw(11) << pctMen << "%"
+            << setw(11) << pctWomen << "%" << endl;
+    }
+}
+
+void findMostWomen(ifstream& inFile, ofstream& outFile) {
+    char major[50];
+    char bestMajor[50];
+    int men, women;
+    char comma;
+    double bestPct = -1.0;
+
+    inFile.clear();
+    inFile.seekg(0);
+    inFile.getline(major, 50);
+
+    while (inFile.getline(major, 50, ',')) {
+        inFile >> men >> comma >> women;
+        inFile.ignore();
+
+        double pctWomen = (women / (double)(men + women)) * 100.0;
+        if (pctWomen > bestPct) {
+            bestPct = pctWomen;
+            strncpy_s(bestMajor, major, 50);
+        }
+    }
+
+    outFile << "\n------------------------------------------------------" << endl;
+    outFile << "Major with Most Women: " << bestMajor
+        << " (" << fixed << setprecision(2) << bestPct << "%)" << endl;
+}
+
+int main() {
+    ifstream inFile;
+    ofstream outFile;
+
+    openFile(inFile, outFile);
+
+    char header[100];
+    inFile.getline(header, 100);
+
+    ratioCalc(inFile, outFile);
+    findMostWomen(inFile, outFile);
+
+    inFile.close();
+    outFile.close();
+
+    cout << "Done! Results written to stemout.txt" << endl;
+    return 0;
+}
