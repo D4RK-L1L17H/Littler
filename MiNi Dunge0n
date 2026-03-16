@@ -107,10 +107,14 @@ int main()
 
         switch (cmd)
         {
-        case 'w': --newRow; break;
-        case 's': ++newRow; break;
-        case 'a': --newCol; break;
-        case 'd': ++newCol; break;
+        case 'w': --newRow; 
+            break;
+        case 's': ++newRow; 
+            break;
+        case 'a': --newCol; 
+            break;
+        case 'd': ++newCol; 
+            break;
         case 'q':
             cout << "\nYou flee the dungeon, " << playerName << ". Farewell!\n";
             running = false;
