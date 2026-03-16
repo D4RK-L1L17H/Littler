@@ -1,0 +1,162 @@
+#include <iostream>
+#include <cstring>
+#include <cctype>
+
+using namespace std;
+
+const int ROWS = 7;
+const int COLS = 10;
+const int COLS_VIS = 9;
+const int NAME_MAX = 32;
+const char WALL = '#';
+const char FLOOR = '.';
+const char TREASURE = 'T';
+const char START = 'S';
+const char PLAYER = '@';
+
+char dungeon[ROWS][COLS] = {
+    "#########",
+    "#S#....T#",
+    "#.#.###.#",
+    "#...#...#",
+    "#.###.#.#",
+    "#.....#.#",
+    "#########"
+};
+
+char display[ROWS][COLS];
+
+char* cellAt(char map[][COLS], int row, int col)
+{
+    return *map + row * COLS + col;
+}
+
+void buildDisplay(int playerRow, int playerCol)
+{
+    char* dst = &display[0][0];
+    const char* src = &dungeon[0][0];
+    for (int i = 0; i < ROWS * COLS; ++i)
+        *(dst + i) = *(src + i);
+    *cellAt(display, playerRow, playerCol) = PLAYER;
+}
+
+void renderMap()
+{
+    for (int r = 0; r < ROWS; ++r)
+    {
+        for (int c = 0; c < COLS_VIS; ++c)
+            cout << display[r][c];
+        cout << '\n';
+    }
+}
+
+void findStart(int& row, int& col)
+{
+    for (int r = 0; r < ROWS; ++r)
+        for (int c = 0; c < COLS; ++c)
+            if (*cellAt(dungeon, r, c) == START)
+            {
+                row = r;
+                col = c;
+                return;
+            }
+    row = 1; col = 1;
+}
+
+void printHUD(const char* name, int row, int col)
+{
+    cout << "\n=== Mini Text Dungeon ===\n";
+    cout << "Adventurer : " << name << '\n';
+    cout << "Position   : (" << row << ", " << col << ")\n";
+    cout << "Controls   : w=up  a=left  s=down  d=right  q=quit\n\n";
+}
+
+int main()
+{
+    char playerName[NAME_MAX];
+
+    cout << "========================================\n";
+    cout << "   Welcome to the Mini Text Dungeon!\n";
+    cout << "========================================\n";
+    cout << "Enter your adventurer's name: ";
+    cin.getline(playerName, NAME_MAX);
+    playerName[NAME_MAX - 1] = '\0';
+
+    cout << "\nGreetings, " << playerName
+        << "! Find the treasure (T) to win.\n\n";
+
+    int pRow, pCol;
+    findStart(pRow, pCol);
+
+    bool running = true;
+    bool victory = false;
+
+    while (running)
+    {
+        buildDisplay(pRow, pCol);
+        printHUD(playerName, pRow, pCol);
+        renderMap();
+
+        cout << "\nMove: ";
+        char cmd;
+        cin >> cmd;
+        cmd = static_cast<char>(tolower(static_cast<unsigned char>(cmd)));
+
+        int newRow = pRow;
+        int newCol = pCol;
+
+        switch (cmd)
+        {
+        case 'w': --newRow; break;
+        case 's': ++newRow; break;
+        case 'a': --newCol; break;
+        case 'd': ++newCol; break;
+        case 'q':
+            cout << "\nYou flee the dungeon, " << playerName << ". Farewell!\n";
+            running = false;
+            continue;
+        default:
+            cout << "Unknown command. Use w/a/s/d to move.\n";
+            continue;
+        }
+
+        if (newRow < 0 || newRow >= ROWS || newCol < 0 || newCol >= COLS)
+        {
+            cout << "You bump into the dungeon boundary!\n";
+            continue;
+        }
+
+        char targetCell = *cellAt(dungeon, newRow, newCol);
+
+        if (targetCell == WALL)
+        {
+            cout << "Ouch! That's a wall.\n";
+            continue;
+        }
+
+        pRow = newRow;
+        pCol = newCol;
+
+        if (targetCell == TREASURE)
+        {
+            buildDisplay(pRow, pCol);
+            printHUD(playerName, pRow, pCol);
+            renderMap();
+
+            cout << "\n*** YOU WIN! ***\n";
+            cout << "Congratulations, ";
+            const char* p = playerName;
+            while (*p != '\0')
+                cout << *p++;
+            cout << "! You found the treasure and escaped the dungeon!\n";
+
+            victory = true;
+            running = false;
+        }
+    }
+
+    if (!victory)
+        cout << "\nGame over. Better luck next time!\n";
+
+    return 0;
+}
