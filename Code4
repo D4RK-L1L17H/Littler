@@ -1,1 +1,195 @@
+#include <iostream>
+#include <climits>
+#include <limits>
+using namespace std;
 
+const int MAX_SIZE = 10;
+
+struct ArrayStack {
+    int data[MAX_SIZE];
+    int top = -1;
+};
+
+bool isEmpty(ArrayStack stack) {
+    return stack.top == -1;
+}
+
+bool isFull(ArrayStack stack) {
+    return stack.top == MAX_SIZE - 1;
+}
+
+void push(ArrayStack& stack, int value) {
+    if (isFull(stack)) {
+        cout << "[Error] Cannot push " << value
+            << " : stack is full (max " << MAX_SIZE << " elements).\n";
+        return;
+    }
+    stack.data[++stack.top] = value;
+    cout << "  Pushed: " << value
+        << "  (size: " << stack.top + 1 << ")\n";
+}
+
+int pop(ArrayStack& stack) {
+    if (isEmpty(stack)) {
+        cout << "[Error] Cannot pop: stack is empty.\n";
+        return -1;
+    }
+    int value = stack.data[stack.top--];
+    cout << "  Popped: " << value
+        << "  (size: " << stack.top + 1 << ")\n";
+    return value;
+}
+
+int peek(ArrayStack stack) {
+    if (isEmpty(stack)) {
+        cout << "[Error] Cannot peek: stack is empty.\n";
+        return -1;
+    }
+    cout << "  Peek: " << stack.data[stack.top] << "\n";
+    return stack.data[stack.top];
+}
+
+struct ListStack {
+    int value;
+    ListStack* next;
+};
+
+bool isEmpty(const ListStack* stack) {
+    return stack == nullptr;
+}
+
+void push(ListStack*& stack, int value) {
+    ListStack* newNode = new ListStack();
+    newNode->value = value;
+    newNode->next = stack;
+    stack = newNode;
+    cout << "  Pushed: " << value << "\n";
+}
+
+int pop(ListStack*& stack) {
+    if (isEmpty(stack)) {
+        cout << "[Error] Cannot pop: stack is empty.\n";
+        return -1;
+    }
+    ListStack* temp = stack;
+    int value = temp->value;
+    stack = stack->next;
+    delete temp;
+    cout << "  Popped: " << value << "\n";
+    return value;
+}
+
+int peek(const ListStack* stack) {
+    if (isEmpty(stack)) {
+        cout << "[Error] Cannot peek: stack is empty.\n";
+        return -1;
+    }
+    cout << "  Peek: " << stack->value << "\n";
+    return stack->value;
+}
+
+void freeStack(ListStack*& stack) {
+    while (!isEmpty(stack)) {
+        ListStack* temp = stack;
+        stack = stack->next;
+        delete temp;
+    }
+}
+
+void clearBadInput() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+int getValidInt(const char* prompt, int minVal, int maxVal) {
+    int value;
+    while (true) {
+        cout << prompt;
+        if (cin >> value) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            if (value >= minVal && value <= maxVal)
+                return value;
+            cout << "[Error] Please enter a number between "
+                << minVal << " and " << maxVal << ".\n";
+        }
+        else {
+            cout << "[Error] Invalid input: please enter a whole number.\n";
+            clearBadInput();
+        }
+    }
+}
+
+int getMenuChoice(int numOptions) {
+    return getValidInt("Enter choice: ", 1, numOptions);
+}
+
+void runArrayMenu() {
+    ArrayStack stack;
+    cout << "\n=== Array-Based Stack (max " << MAX_SIZE << " elements) ===\n";
+    bool running = true;
+    while (running) {
+        cout << "\n  1. Push\n  2. Pop\n  3. Peek\n"
+            << "  4. isEmpty\n  5. isFull\n  6. Back\n";
+        switch (getMenuChoice(6)) {
+        case 1:
+            push(stack, getValidInt("  Value: ", INT_MIN, INT_MAX));
+            break;
+        case 2: pop(stack);
+            break;
+        case 3: peek(stack);
+            break;
+        case 4:
+            cout << "  isEmpty: " << (isEmpty(stack) ? "true" : "false") << "\n";
+            break;
+        case 5:
+            cout << "  isFull:  " << (isFull(stack) ? "true" : "false") << "\n";
+            break;
+        case 6: running = false;
+            break;
+        }
+    }
+}
+
+void runListMenu() {
+    ListStack* stack = nullptr;
+    cout << "\n=== Linked-List-Based Stack ===\n";
+    bool running = true;
+    while (running) {
+        cout << "\n  1. Push\n  2. Pop\n  3. Peek\n  4. isEmpty\n  5. Back\n";
+        switch (getMenuChoice(5)) {
+        case 1:
+            push(stack, getValidInt("  Value: ", INT_MIN, INT_MAX));
+            break;
+        case 2: pop(stack);
+            break;
+        case 3: peek(stack);
+            break;
+        case 4:
+            cout << "  isEmpty: " << (isEmpty(stack) ? "true" : "false") << "\n";
+            break;
+        case 5: running = false;
+            break;
+        }
+    }
+    freeStack(stack);
+}
+
+int main() {
+    bool running = true;
+    while (running) {
+        cout << "\n========== Stack Implementations ===========\n"
+            << "  1. Array stack\n"
+            << "  2. Linked-list stack\n"
+            << "  3. Quit\n";
+        switch (getMenuChoice(3)) {
+        case 1: runArrayMenu();
+            break;
+        case 2: runListMenu();
+            break;
+        case 3: running = false;
+            break;
+        }
+    }
+    cout << "Goodbye!\n";
+    return 0;
+}
